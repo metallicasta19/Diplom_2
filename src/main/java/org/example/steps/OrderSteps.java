@@ -1,4 +1,4 @@
-package org.example.Steps;
+package org.example.steps;
 
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;

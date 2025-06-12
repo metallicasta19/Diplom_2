@@ -1,34 +1,35 @@
-import io.restassured.RestAssured;
+import com.github.javafaker.Faker;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.example.Steps.UserSteps;
+import org.example.models.User;
+import org.example.steps.UserSteps;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Random;
-
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
-public class UpdateUserDataTest {
+public class UpdateUserDataTest extends BaseApi {
 
     UserSteps userSteps = new UserSteps();
 
-    Random random = new Random();
+    Faker faker = new Faker();
     private String email;
     private String password;
     private String name;
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site";
-
-        email = "something" + random.nextInt(10000000) + "@yandex.ru";
+        email = faker.internet().emailAddress();
         password = RandomStringUtils.randomAlphabetic(6);
-        name = RandomStringUtils.randomAlphabetic(6);
+        name = faker.name().firstName();
 
-        userSteps.createUser(email, password, name);
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setName(name);
+        userSteps.createUser(user);
     }
 
     @After
@@ -46,7 +47,7 @@ public class UpdateUserDataTest {
         Response loginResponse = userSteps.loginUser(email, password).extract().response();
         String accessToken = loginResponse.path("accessToken");
 
-        email = "something" + random.nextInt(10000000) + "@yandex.ru";
+        email = faker.internet().emailAddress();
 
         userSteps
                 .updateUserData(accessToken, email, null)
@@ -58,7 +59,7 @@ public class UpdateUserDataTest {
         Response loginResponse = userSteps.loginUser(email, password).extract().response();
         String accessToken = loginResponse.path("accessToken");
 
-        name = RandomStringUtils.randomAlphabetic(6);
+        name = faker.name().firstName();
 
         userSteps
                 .updateUserData(accessToken, null, name)
@@ -67,7 +68,7 @@ public class UpdateUserDataTest {
 
     @Test
     public void changeEmailFieldWithoutAuth() {
-        email = "something" + random.nextInt(10000000) + "@yandex.ru";
+        email = faker.internet().emailAddress();
 
         userSteps
                 .updateUserData("", email, null)
@@ -76,7 +77,7 @@ public class UpdateUserDataTest {
 
     @Test
     public void changeNameFieldWithoutAuth() {
-        name = RandomStringUtils.randomAlphabetic(6);
+        name = faker.name().firstName();
 
         userSteps
                 .updateUserData("", null, name)

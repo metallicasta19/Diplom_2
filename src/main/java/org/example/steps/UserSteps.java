@@ -1,4 +1,4 @@
-package org.example.Steps;
+package org.example.steps;
 
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
@@ -9,12 +9,7 @@ import static org.example.utils.Endpoints.*;
 
 public class UserSteps {
     @Step("Создание пользователя")
-    public ValidatableResponse createUser(String email, String password, String name) {
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword(password);
-        user.setName(name);
-
+    public ValidatableResponse createUser(User user) {
         return given()
                 .header("Content-type", "application/json")
                 .and()

@@ -1,33 +1,35 @@
-import io.restassured.RestAssured;
+import com.github.javafaker.Faker;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.example.Steps.UserSteps;
+import org.example.models.User;
+import org.example.steps.UserSteps;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Random;
-
 import static org.apache.http.HttpStatus.*;
 
-public class LoginUserTest {
+public class LoginUserTest extends BaseApi {
 
     private String email;
     private String password;
     private String name;
 
     UserSteps userSteps = new UserSteps();
-    Random random = new Random();
+    Faker faker = new Faker();
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site";
-
-        email = "something" + random.nextInt(10000000) + "@yandex.ru";
+        email = faker.internet().emailAddress();
         password = RandomStringUtils.randomAlphabetic(6);
-        name = RandomStringUtils.randomAlphabetic(6);
+        name = faker.name().firstName();
 
-        userSteps.createUser(email, password, name);
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setName(name);
+
+        userSteps.createUser(user);
     }
 
     @After
@@ -49,19 +51,19 @@ public class LoginUserTest {
 
     @Test
     public void loginWithInvalidLoginTest() {
-        email = "something" + random.nextInt(10000000) + "@yandex.ru";
+        String invalidEmail = faker.internet().emailAddress();
 
         userSteps
-                .loginUser(email, password)
+                .loginUser(invalidEmail, password)
                 .statusCode(SC_UNAUTHORIZED);
     }
 
     @Test
     public void loginWithInvalidPasswordTest() {
-        password = RandomStringUtils.randomAlphabetic(6);
+        String invalidPassword = RandomStringUtils.randomAlphabetic(6);
 
         userSteps
-                .loginUser(email, password)
+                .loginUser(email, invalidPassword)
                 .statusCode(SC_UNAUTHORIZED);
     }
 }

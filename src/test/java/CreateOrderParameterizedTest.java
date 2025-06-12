@@ -1,8 +1,9 @@
-import io.restassured.RestAssured;
+import com.github.javafaker.Faker;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.example.Steps.OrderSteps;
-import org.example.Steps.UserSteps;
+import org.example.models.User;
+import org.example.steps.OrderSteps;
+import org.example.steps.UserSteps;
 import org.example.models.Ingredients;
 import org.junit.After;
 import org.junit.Before;
@@ -11,12 +12,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.List;
-import java.util.Random;
 
 import static org.apache.http.HttpStatus.*;
 
 @RunWith(Parameterized.class)
-public class CreateOrderParameterizedTest {
+public class CreateOrderParameterizedTest extends BaseApi {
 
     OrderSteps orderSteps = new OrderSteps();
     UserSteps userSteps = new UserSteps();
@@ -44,19 +44,26 @@ public class CreateOrderParameterizedTest {
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site";
-
-        Random random = new Random();
-        email = "something" + random.nextInt(10000000) + "@yandex.ru";
+        Faker faker = new Faker();
+        email = faker.internet().emailAddress();
         password = RandomStringUtils.randomAlphabetic(6);
-        String name = RandomStringUtils.randomAlphabetic(6);
+        String name = faker.name().firstName();
 
-        Response createResponse = userSteps.createUser(email, password, name).extract().response();
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setName(name);
+
+        Response createResponse = userSteps.createUser(user).extract().response();
         accessToken = createResponse.path("accessToken");
     }
 
     @After
     public void tearDown() {
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
+
         Response loginResponse = userSteps.loginUser(email, password).extract().response();
 
         if (loginResponse.getStatusCode() == SC_OK) {

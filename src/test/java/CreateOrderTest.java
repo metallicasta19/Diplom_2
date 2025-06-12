@@ -1,20 +1,20 @@
-import io.restassured.RestAssured;
+import com.github.javafaker.Faker;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.example.Steps.OrderSteps;
-import org.example.Steps.UserSteps;
+import org.example.models.User;
+import org.example.steps.OrderSteps;
+import org.example.steps.UserSteps;
 import org.example.models.Ingredients;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Random;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
-public class CreateOrderTest {
+public class CreateOrderTest extends BaseApi {
     OrderSteps orderSteps = new OrderSteps();
     UserSteps userSteps = new UserSteps();
 
@@ -23,14 +23,17 @@ public class CreateOrderTest {
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site";
-
-        Random random = new Random();
-        email = "something" + random.nextInt(10000000) + "@yandex.ru";
+        Faker faker = new Faker();
+        email = faker.internet().emailAddress();
         password = RandomStringUtils.randomAlphabetic(6);
-        String name = RandomStringUtils.randomAlphabetic(6);
+        String name = faker.name().firstName();
 
-        userSteps.createUser(email, password, name);
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setName(name);
+
+        userSteps.createUser(user);
     }
 
     @After
